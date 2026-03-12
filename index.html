@@ -1,0 +1,2471 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Análisis interactivo de políticas de privacidad de seis desarrolladores frontier de IA - Stanford University 2025">
+<title>Privacidad de Usuarios y LLMs — Infografía Interactiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+/* ====================================================
+   DESIGN TOKENS — UX: Consistent visual language
+   ==================================================== */
+:root {
+  --bg-0: #060912;
+  --bg-1: #0d1322;
+  --bg-2: #131b2e;
+  --bg-3: #1b2540;
+  --surface: #1e2d47;
+  --surface-2: #243558;
+  --border: rgba(100,150,255,0.12);
+  --border-hover: rgba(100,150,255,0.35);
+
+  --amber: #f5a623;
+  --amber-light: #ffd07a;
+  --amber-dim: rgba(245,166,35,0.15);
+  --sky: #38c8f0;
+  --sky-dim: rgba(56,200,240,0.1);
+  --red: #ff5c6a;
+  --red-dim: rgba(255,92,106,0.12);
+  --green: #22d98a;
+  --green-dim: rgba(34,217,138,0.1);
+  --purple: #a78bfa;
+
+  --text-0: #f0f6ff;
+  --text-1: #b8cce8;
+  --text-2: #6e8daf;
+  --text-3: #3d5a7e;
+
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'Lora', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+
+  --shadow-card: 0 4px 32px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.04) inset;
+  --shadow-glow: 0 0 40px rgba(245,166,35,0.15);
+
+  --transition: 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ====================================================
+   RESET + BASE — UX: Accessible, consistent baseline
+   ==================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg-0);
+  color: var(--text-0);
+  font-family: var(--font-body);
+  line-height: 1.7;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* UX: Focus ring for keyboard accessibility (WCAG 2.4.7) */
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* ====================================================
+   NOISE TEXTURE OVERLAY — depth without noise library
+   ==================================================== */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* ====================================================
+   NAVIGATION — UX: Sticky, clear, keyboard-friendly
+   ==================================================== */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6,9,18,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 clamp(16px, 4vw, 48px);
+}
+
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  gap: 16px;
+}
+
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+}
+
+.nav-links::-webkit-scrollbar { display: none; }
+
+/* UX: ARIA current page indicator + visual active state */
+.nav-links a {
+  display: block;
+  padding: 6px 12px;
+  color: var(--text-2);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+  white-space: nowrap;
+}
+
+.nav-links a:hover,
+.nav-links a[aria-current="true"] {
+  color: var(--amber);
+  background: var(--amber-dim);
+}
+
+/* ====================================================
+   LAYOUT CONTAINERS
+   ==================================================== */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 48px);
+  position: relative;
+  z-index: 1;
+}
+
+section {
+  padding: clamp(64px, 10vw, 120px) 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+/* ====================================================
+   HERO SECTION
+   ==================================================== */
+#hero {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 0 60px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative radial glow — atmosphere */
+#hero::after {
+  content: '';
+  position: absolute;
+  top: -200px;
+  right: -200px;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(ellipse, rgba(245,166,35,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--amber-dim);
+  border: 1px solid rgba(245,166,35,0.3);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 28px;
+  text-transform: uppercase;
+  width: fit-content;
+  /* UX: Animate on load for perceived performance */
+  animation: fadeSlideUp 0.6s ease both;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 6vw, 5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+  animation: fadeSlideUp 0.7s 0.1s ease both;
+}
+
+.hero-title em {
+  font-style: normal;
+  color: var(--amber);
+  position: relative;
+}
+
+.hero-title em::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--amber), transparent);
+  border-radius: 2px;
+}
+
+.hero-sub {
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  color: var(--text-1);
+  max-width: 640px;
+  margin-bottom: 48px;
+  line-height: 1.7;
+  animation: fadeSlideUp 0.7s 0.2s ease both;
+}
+
+/* UX: Key stats as scannable numbers (F-pattern reading) */
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  animation: fadeSlideUp 0.7s 0.3s ease both;
+}
+
+.stat-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 28px;
+  flex: 1;
+  min-width: 140px;
+  transition: border-color var(--transition), transform var(--transition);
+}
+
+.stat-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+}
+
+.stat-number {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 800;
+  color: var(--amber);
+  display: block;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* UX: Scroll cue — tells user content continues */
+.scroll-hint {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  animation: fadeSlideUp 1s 0.8s ease both;
+}
+
+.scroll-arrow {
+  animation: bounceDown 1.8s ease-in-out infinite;
+}
+
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+/* ====================================================
+   SECTION LABELS — UX: Clear information hierarchy
+   ==================================================== */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--amber);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.section-line {
+  flex: 1;
+  max-width: 40px;
+  height: 1px;
+  background: var(--amber);
+  opacity: 0.4;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+
+.section-desc {
+  color: var(--text-1);
+  font-size: 1rem;
+  max-width: 580px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+}
+
+/* ====================================================
+   COMPANY CARDS — UX: Scannable, interactive, ARIA
+   ==================================================== */
+.company-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* UX: Role=button + tabindex for keyboard access */
+.company-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.company-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--company-color, var(--amber));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition);
+}
+
+.company-card:hover::before,
+.company-card[aria-expanded="true"]::before {
+  transform: scaleX(1);
+}
+
+.company-card:hover,
+.company-card[aria-expanded="true"] {
+  border-color: var(--border-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card);
+}
+
+.company-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.company-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--company-bg, rgba(245,166,35,0.1));
+  flex-shrink: 0;
+}
+
+.company-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.company-product {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Privacy badges on each card */
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.badge-warn { background: rgba(255,92,106,0.15); color: var(--red); border: 1px solid rgba(255,92,106,0.3); }
+.badge-ok   { background: rgba(34,217,138,0.1); color: var(--green); border: 1px solid rgba(34,217,138,0.25); }
+.badge-neutral { background: rgba(180,180,200,0.1); color: var(--text-2); border: 1px solid rgba(180,180,200,0.2); }
+
+/* Expandable detail panel */
+.company-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease;
+  opacity: 0;
+}
+
+.company-detail.open {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.detail-inner {
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: var(--text-1);
+  line-height: 1.65;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  gap: 12px;
+}
+
+.detail-key {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  flex-shrink: 0;
+}
+
+.detail-val {
+  font-size: 0.82rem;
+  color: var(--text-0);
+  text-align: right;
+}
+
+.chevron {
+  transition: transform var(--transition);
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+
+.company-card[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+  color: var(--amber);
+}
+
+/* ====================================================
+   PRIVACY PRACTICES HEATMAP — Comparison Table
+   ==================================================== */
+.heatmap-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  /* UX: Subtle visual affordance for scrollable content */
+  background: linear-gradient(90deg, var(--bg-2) 0%, var(--bg-2) 85%, transparent 100%);
+}
+
+.heatmap {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.heatmap th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.heatmap th:first-child {
+  border-radius: var(--radius-md) 0 0 0;
+  min-width: 220px;
+}
+
+.heatmap th:last-child {
+  border-radius: 0 var(--radius-md) 0 0;
+}
+
+.heatmap td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background var(--transition);
+  vertical-align: middle;
+}
+
+.heatmap tr:hover td {
+  background: rgba(255,255,255,0.025);
+}
+
+.heatmap td:first-child {
+  color: var(--text-1);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-right: 1px solid var(--border);
+  background: var(--bg-1);
+  position: sticky;
+  left: 0;
+}
+
+/* UX: Color-coded cells communicate status at a glance */
+.cell-yes {
+  color: var(--red);
+  background: rgba(255,92,106,0.07);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.cell-no {
+  color: var(--green);
+  background: rgba(34,217,138,0.07);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.cell-ns {
+  color: var(--text-3);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+}
+
+/* ====================================================
+   CHARTS — SVG-based, animated
+   ==================================================== */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 28px;
+}
+
+.chart-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+}
+
+.chart-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.chart-sub {
+  font-size: 0.78rem;
+  color: var(--text-2);
+  margin-bottom: 24px;
+  font-style: italic;
+}
+
+/* Privacy risk score bars */
+.score-bars { display: flex; flex-direction: column; gap: 14px; }
+
+.score-row { display: flex; align-items: center; gap: 12px; }
+
+.score-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-1);
+  width: 90px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.score-bar-track {
+  flex: 1;
+  height: 10px;
+  background: var(--bg-3);
+  border-radius: 100px;
+  overflow: hidden;
+  position: relative;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  width: 0;
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+}
+
+.score-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 100px;
+}
+
+.score-val {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--amber);
+  font-weight: 600;
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Dot matrix for training data sources */
+.dot-matrix {
+  display: grid;
+  grid-template-columns: auto repeat(6, 1fr);
+  gap: 6px;
+  align-items: center;
+}
+
+.dot-row-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-2);
+  letter-spacing: 0.04em;
+  padding-right: 10px;
+  line-height: 1.3;
+}
+
+.dot-col-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-2);
+  text-align: center;
+  letter-spacing: 0.04em;
+  padding-bottom: 4px;
+}
+
+.dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition);
+}
+
+.dot:hover { transform: scale(1.3); }
+
+.dot-yes { background: var(--red); box-shadow: 0 0 10px rgba(255,92,106,0.4); }
+.dot-no  { background: var(--green); box-shadow: 0 0 8px rgba(34,217,138,0.3); }
+.dot-ns  { background: var(--bg-3); border: 1px dashed var(--border); }
+
+/* Donut / radial comparison */
+.radial-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.radial-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.radial-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-2);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  max-width: 80px;
+  line-height: 1.3;
+}
+
+/* ====================================================
+   RETENTION TIMELINE
+   ==================================================== */
+.retention-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.retention-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  transition: border-color var(--transition);
+}
+
+.retention-row:hover { border-color: var(--border-hover); }
+
+.retention-co {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.retention-track {
+  flex: 1;
+  height: 12px;
+  background: var(--bg-3);
+  border-radius: 100px;
+  overflow: hidden;
+  position: relative;
+}
+
+.retention-fill {
+  height: 100%;
+  border-radius: 100px;
+  width: 0;
+  transition: width 1.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.retention-fill.indefinite {
+  background: linear-gradient(90deg, var(--red), #ff8c42);
+  width: 100% !important;
+  animation: pulse-red 2s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+.retention-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+
+/* ====================================================
+   CHILDREN'S DATA HIGHLIGHT — UX: Alert pattern
+   ==================================================== */
+.alert-section {
+  background: linear-gradient(135deg, rgba(255,92,106,0.08), rgba(255,140,66,0.04));
+  border: 1px solid rgba(255,92,106,0.25);
+  border-radius: var(--radius-xl);
+  padding: clamp(32px, 5vw, 56px);
+  position: relative;
+  overflow: hidden;
+}
+
+.alert-section::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(ellipse, rgba(255,92,106,0.08), transparent 70%);
+  pointer-events: none;
+}
+
+.alert-icon-big {
+  width: 56px;
+  height: 56px;
+  background: rgba(255,92,106,0.15);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* ====================================================
+   RECOMMENDATIONS — UX: Card pattern with numbering
+   ==================================================== */
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.rec-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition);
+}
+
+.rec-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card);
+}
+
+.rec-num {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--amber);
+  opacity: 0.12;
+  position: absolute;
+  bottom: -10px;
+  right: 16px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.rec-icon {
+  width: 42px;
+  height: 42px;
+  background: var(--amber-dim);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.rec-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.rec-text {
+  font-size: 0.82rem;
+  color: var(--text-1);
+  line-height: 1.65;
+}
+
+/* ====================================================
+   KEY FINDINGS CALLOUT
+   ==================================================== */
+.finding-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.finding-item {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color var(--transition);
+}
+
+.finding-item:hover { border-color: var(--border-hover); }
+
+.finding-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.finding-text {
+  font-size: 0.85rem;
+  color: var(--text-1);
+  line-height: 1.6;
+}
+
+.finding-text strong {
+  color: var(--text-0);
+  font-style: normal;
+}
+
+/* ====================================================
+   FOOTER / SIGNATURE — UX: Credible, informative
+   ==================================================== */
+footer {
+  padding: 48px 0;
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.footer-meta {
+  font-size: 0.78rem;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+
+.footer-meta a {
+  color: var(--sky);
+  text-decoration: none;
+}
+
+.footer-meta a:hover { text-decoration: underline; }
+
+.footer-sig {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.sig-logo {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.sig-logo span { color: var(--amber); }
+
+.sig-sub {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ====================================================
+   ANIMATIONS — UX: Entrance animations for delight
+   ==================================================== */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll-triggered reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* ====================================================
+   TOOLTIP — UX: Contextual help on hover
+   ==================================================== */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 50;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* ====================================================
+   CONSENT METER
+   ==================================================== */
+.consent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.consent-item {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+
+.consent-label {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.consent-desc {
+  font-size: 0.77rem;
+  color: var(--text-2);
+  margin-bottom: 14px;
+  font-style: italic;
+}
+
+.consent-count {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--amber);
+}
+
+.consent-of {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-3);
+}
+
+/* ====================================================
+   RESPONSIVE — UX: Accessible on all devices
+   ==================================================== */
+@media (max-width: 768px) {
+  .hero-stats { flex-direction: column; }
+  .consent-grid { grid-template-columns: 1fr; }
+  .dot-matrix { grid-template-columns: auto repeat(6, 1fr); gap: 4px; }
+  .dot { width: 22px; height: 22px; }
+  .dot-row-label { font-size: 0.55rem; }
+  .dot-col-label { font-size: 0.52rem; }
+  .retention-co { width: 70px; font-size: 0.72rem; }
+  .score-label { width: 65px; font-size: 0.6rem; }
+  .footer-sig { align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .company-grid { grid-template-columns: 1fr; }
+  .rec-grid { grid-template-columns: 1fr; }
+  .charts-grid { grid-template-columns: 1fr; }
+}
+
+/* ====================================================
+   PRINT — basic support
+   ==================================================== */
+@media print {
+  nav, .scroll-hint { display: none; }
+  body { background: white; color: black; }
+  section { break-inside: avoid; }
+}
+
+/* ====================================================
+   HIGH CONTRAST support (WCAG 1.4.6)
+   ==================================================== */
+@media (prefers-contrast: high) {
+  :root {
+    --border: rgba(200,220,255,0.4);
+    --text-2: #9ab4d4;
+  }
+}
+
+/* Reduced motion (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ====================================================
+   DIVIDER
+   ==================================================== */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 40px 0;
+}
+
+/* highlight text */
+.hl-amber { color: var(--amber); }
+.hl-red   { color: var(--red); }
+.hl-green { color: var(--green); }
+.hl-sky   { color: var(--sky); }
+
+/* Summary box */
+.summary-box {
+  background: var(--amber-dim);
+  border: 1px solid rgba(245,166,35,0.25);
+  border-left: 4px solid var(--amber);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: 20px 24px;
+  margin: 32px 0;
+  font-size: 0.9rem;
+  color: var(--text-1);
+  line-height: 1.7;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ============================================================
+     SKIP LINK — UX: Accessibility for keyboard users (WCAG 2.4.1)
+     ============================================================ -->
+<a href="#main" class="skip-link" style="
+  position:absolute; top:-40px; left:16px;
+  background:var(--amber); color:#000; padding:8px 16px;
+  border-radius:4px; font-weight:700; z-index:999;
+  transition:top 0.2s;
+" onfocus="this.style.top='16px'" onblur="this.style.top='-40px'">
+  Saltar al contenido
+</a>
+
+<!-- ============================================================
+     NAVIGATION
+     ============================================================ -->
+<nav role="navigation" aria-label="Navegación principal">
+  <div class="nav-inner">
+    <div class="nav-logo" aria-label="Privacidad LLM Análisis">PRIV·LLM·2025</div>
+    <ul class="nav-links" role="list">
+      <li><a href="#hero" aria-current="true">Inicio</a></li>
+      <li><a href="#empresas">Empresas</a></li>
+      <li><a href="#practicas">Prácticas</a></li>
+      <li><a href="#datos">Datos Entrenamiento</a></li>
+      <li><a href="#retencion">Retención</a></li>
+      <li><a href="#ninos">Menores</a></li>
+      <li><a href="#recomendaciones">Propuestas</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<main id="main">
+
+  <!-- ========== HERO ========== -->
+  <section id="hero" aria-labelledby="hero-title">
+    <div class="container">
+      <div class="hero-eyebrow" role="note" aria-label="Contexto del estudio">
+        <!-- Icon: Shield -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Stanford University · arXiv:2509.05382 · Sep 2025
+      </div>
+
+      <h1 class="hero-title" id="hero-title">
+        Privacidad de Usuarios<br>
+        y <em>Modelos de Lenguaje</em>
+      </h1>
+
+      <p class="hero-sub">
+        Análisis exhaustivo de las políticas de privacidad de seis desarrolladores frontier de IA en EE.UU., examinando cómo recopilan, retienen y utilizan los datos de los usuarios para entrenar modelos.
+      </p>
+
+      <!-- UX: Key stats — most important numbers visible immediately -->
+      <div class="hero-stats" role="list" aria-label="Estadísticas clave del estudio">
+        <div class="stat-card reveal" role="listitem">
+          <span class="stat-number" aria-label="6 desarrolladores analizados">6</span>
+          <span class="stat-label">Desarrolladores analizados</span>
+        </div>
+        <div class="stat-card reveal reveal-delay-1" role="listitem">
+          <span class="stat-number" aria-label="28 documentos revisados">28</span>
+          <span class="stat-label">Documentos revisados</span>
+        </div>
+        <div class="stat-card reveal reveal-delay-2" role="listitem">
+          <span class="stat-number" aria-label="6 de 6 empresas entrenan con datos por defecto">6/6</span>
+          <span class="stat-label">Entrenan por defecto</span>
+        </div>
+        <div class="stat-card reveal reveal-delay-3" role="listitem">
+          <span class="stat-number" aria-label="700 millones de usuarios de ChatGPT">700M</span>
+          <span class="stat-label">Usuarios ChatGPT (ago 2025)</span>
+        </div>
+        <div class="stat-card reveal reveal-delay-4" role="listitem">
+          <span class="stat-number" aria-label="90 por ciento de cuota de mercado">90%</span>
+          <span class="stat-label">Cuota de mercado combinada</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- UX: Scroll indicator reduces uncertainty about page length -->
+    <div class="scroll-hint" aria-hidden="true">
+      <span>Explorar</span>
+      <svg class="scroll-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </div>
+  </section>
+
+  <!-- ========== HALLAZGOS CLAVE ========== -->
+  <section id="hallazgos" aria-labelledby="hallazgos-title">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-num">00</span>
+        <div class="section-line"></div>
+      </div>
+      <h2 class="section-title reveal" id="hallazgos-title">Hallazgos <em class="hl-amber">Principales</em></h2>
+      <p class="section-desc reveal">Los resultados del análisis revelan patrones preocupantes en el manejo de datos por parte de los principales desarrolladores de IA.</p>
+
+      <div class="finding-grid">
+        <!-- Finding 1 -->
+        <div class="finding-item reveal">
+          <div class="finding-icon" style="background:rgba(255,92,106,0.15)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff5c6a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <p class="finding-text">
+            <strong>Los 6 desarrolladores</strong> utilizan los chats de usuarios para entrenar sus modelos — ahora <strong>todos por defecto</strong> (opt-out), tras el cambio de Anthropic en septiembre 2025.
+          </p>
+        </div>
+        <!-- Finding 2 -->
+        <div class="finding-item reveal reveal-delay-1">
+          <div class="finding-icon" style="background:rgba(245,166,35,0.15)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <p class="finding-text">
+            <strong>Sistema de dos niveles:</strong> los usuarios empresariales tienen privacidad por defecto, mientras los consumidores deben desactivarla activamente.
+          </p>
+        </div>
+        <!-- Finding 3 -->
+        <div class="finding-item reveal reveal-delay-2">
+          <div class="finding-icon" style="background:rgba(167,139,250,0.15)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <p class="finding-text">
+            Amazon, Meta y OpenAI retienen datos de chats <strong>indefinidamente</strong>, creando riesgos graves de seguridad y vigilancia.
+          </p>
+        </div>
+        <!-- Finding 4 -->
+        <div class="finding-item reveal reveal-delay-3">
+          <div class="finding-icon" style="background:rgba(56,200,240,0.12)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38c8f0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <p class="finding-text">
+            Las políticas de privacidad están <strong>dispersas en múltiples documentos</strong> — OpenAI requiere revisar al menos 6 documentos separados para entender sus prácticas.
+          </p>
+        </div>
+        <!-- Finding 5 -->
+        <div class="finding-item reveal">
+          <div class="finding-icon" style="background:rgba(255,92,106,0.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff5c6a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <p class="finding-text">
+            <strong>4 de 6 empresas</strong> parecen incluir datos de chats de menores (13-18 años) para entrenar modelos, generando serias preocupaciones éticas y legales.
+          </p>
+        </div>
+        <!-- Finding 6 -->
+        <div class="finding-item reveal reveal-delay-1">
+          <div class="finding-icon" style="background:rgba(34,217,138,0.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d98a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <p class="finding-text">
+            Solo <strong>Microsoft</strong> declara explícitamente que intenta eliminar datos personales (nombres, direcciones, biométricos) antes de usarlos para entrenamiento.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== EMPRESAS ========== -->
+  <section id="empresas" aria-labelledby="empresas-title">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-num">01</span>
+        <div class="section-line"></div>
+      </div>
+      <h2 class="section-title reveal" id="empresas-title">Los <em class="hl-amber">Seis</em> Desarrolladores</h2>
+      <p class="section-desc reveal">Miembros del Frontier Model Forum con cerca del 90% de cuota de mercado en EE.UU. Haz clic en cada tarjeta para ver los detalles.</p>
+
+      <!-- UX: Interactive cards with ARIA expanded state -->
+      <div class="company-grid" role="list">
+
+        <!-- Amazon -->
+        <div class="company-card reveal" role="listitem" tabindex="0"
+             aria-expanded="false" aria-controls="detail-amazon" id="card-amazon"
+             onclick="toggleCard(this)" onkeydown="handleKey(event,this)"
+             style="--company-color:#ff9900; --company-bg:rgba(255,153,0,0.1)">
+          <div class="company-header">
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                <div class="company-icon" aria-hidden="true">
+                  <!-- Amazon icon SVG -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff9900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18M3 15h18M12 3v18M3 3h18v18H3z" opacity="0.3"/><path d="M3 3h18v18H3z" stroke-width="1.5"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+                <div>
+                  <div class="company-name">Amazon</div>
+                  <div class="company-product">Nova Chatbot</div>
+                </div>
+              </div>
+              <div class="badge-row">
+                <span class="badge badge-warn">Retención indefinida</span>
+                <span class="badge badge-neutral">Sin especificar entrenamiento</span>
+              </div>
+            </div>
+            <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="company-detail" id="detail-amazon" role="region" aria-label="Detalles Amazon">
+            <div class="detail-inner">
+              <div class="detail-row">
+                <span class="detail-key">Entrenamiento por defecto</span>
+                <span class="detail-val hl-amber">No especificado</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Opt-out disponible</span>
+                <span class="detail-val hl-amber">No especificado</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Retención de datos</span>
+                <span class="detail-val hl-red">Indefinida</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Menores (13-18)</span>
+                <span class="detail-val hl-red">No permite cuentas</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Personalización</span>
+                <span class="detail-val hl-amber">No especificado</span>
+              </div>
+              <p style="margin-top:12px; font-size:0.78rem; color:var(--text-2); font-style:italic">La política principal es silente sobre IA; el aviso se encontró solo en la interfaz de Nova.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Anthropic -->
+        <div class="company-card reveal reveal-delay-1" role="listitem" tabindex="0"
+             aria-expanded="false" aria-controls="detail-anthropic" id="card-anthropic"
+             onclick="toggleCard(this)" onkeydown="handleKey(event,this)"
+             style="--company-color:#d97706; --company-bg:rgba(217,119,6,0.1)">
+          <div class="company-header">
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                <div class="company-icon" aria-hidden="true">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <div>
+                  <div class="company-name">Anthropic</div>
+                  <div class="company-product">Claude</div>
+                </div>
+              </div>
+              <div class="badge-row">
+                <span class="badge badge-warn">Cambió a opt-out (sep 2025)</span>
+                <span class="badge badge-ok">No acepta menores</span>
+              </div>
+            </div>
+            <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="company-detail" id="detail-anthropic" role="region" aria-label="Detalles Anthropic">
+            <div class="detail-inner">
+              <div class="detail-row">
+                <span class="detail-key">Entrenamiento por defecto</span>
+                <span class="detail-val hl-red">Sí (desde sep 2025)</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Opt-out disponible</span>
+                <span class="detail-val hl-green">Sí</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Retención de datos</span>
+                <span class="detail-val hl-green">30 días (opt-out) / 5 años</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Menores (13-18)</span>
+                <span class="detail-val hl-green">No acepta menores de 18</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">De-identificación</span>
+                <span class="detail-val hl-sky">Declarada en política</span>
+              </div>
+              <p style="margin-top:12px; font-size:0.78rem; color:var(--text-2); font-style:italic">Fue el único en opt-in antes de sep 2025. Transparency Hub como modelo de referencia.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Google -->
+        <div class="company-card reveal reveal-delay-2" role="listitem" tabindex="0"
+             aria-expanded="false" aria-controls="detail-google" id="card-google"
+             onclick="toggleCard(this)" onkeydown="handleKey(event,this)"
+             style="--company-color:#4285f4; --company-bg:rgba(66,133,244,0.1)">
+          <div class="company-header">
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                <div class="company-icon" aria-hidden="true">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><path d="M9.9 19.2C7 17.8 5 14.7 5 12a7 7 0 0 1 7-7"/></svg>
+                </div>
+                <div>
+                  <div class="company-name">Google</div>
+                  <div class="company-product">Gemini</div>
+                </div>
+              </div>
+              <div class="badge-row">
+                <span class="badge badge-warn">Sin opt-out claro</span>
+                <span class="badge badge-warn">Incluye menores desde mayo 2025</span>
+              </div>
+            </div>
+            <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="company-detail" id="detail-google" role="region" aria-label="Detalles Google">
+            <div class="detail-inner">
+              <div class="detail-row">
+                <span class="detail-key">Entrenamiento por defecto</span>
+                <span class="detail-val hl-red">Sí</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Opt-out disponible</span>
+                <span class="detail-val hl-red">Sin ruta clara</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Retención de datos</span>
+                <span class="detail-val">18 meses (defecto) / hasta 3 años</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Menores (13-18)</span>
+                <span class="detail-val hl-red">Sí (desde may 2025)</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Datos de otras plataformas</span>
+                <span class="detail-val hl-red">Sí (Google Docs, etc.)</span>
+              </div>
+              <p style="margin-top:12px; font-size:0.78rem; color:var(--text-2); font-style:italic">Revisores humanos retienen chats hasta 3 años. Advierte no ingresar info confidencial.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta -->
+        <div class="company-card reveal reveal-delay-3" role="listitem" tabindex="0"
+             aria-expanded="false" aria-controls="detail-meta" id="card-meta"
+             onclick="toggleCard(this)" onkeydown="handleKey(event,this)"
+             style="--company-color:#0866ff; --company-bg:rgba(8,102,255,0.1)">
+          <div class="company-header">
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                <div class="company-icon" aria-hidden="true">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0866ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 4H6C4.9 4 4 4.9 4 6v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                </div>
+                <div>
+                  <div class="company-name">Meta</div>
+                  <div class="company-product">Meta AI</div>
+                </div>
+              </div>
+              <div class="badge-row">
+                <span class="badge badge-warn">Sin opt-out claro</span>
+                <span class="badge badge-warn">Retención indefinida</span>
+              </div>
+            </div>
+            <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="company-detail" id="detail-meta" role="region" aria-label="Detalles Meta">
+            <div class="detail-inner">
+              <div class="detail-row">
+                <span class="detail-key">Entrenamiento por defecto</span>
+                <span class="detail-val hl-red">Sí</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Opt-out disponible</span>
+                <span class="detail-val hl-red">No especificado</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Retención de datos</span>
+                <span class="detail-val hl-red">Indefinida (sin límite)</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Datos de otras plataformas</span>
+                <span class="detail-val hl-red">Instagram, Facebook, posts, fotos</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Revisores humanos</span>
+                <span class="detail-val hl-red">Accedían a info identificable</span>
+              </div>
+              <p style="margin-top:12px; font-size:0.78rem; color:var(--text-2); font-style:italic">Reportes revelaron que contratistas vieron conversaciones íntimas con datos identificables.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Microsoft -->
+        <div class="company-card reveal" role="listitem" tabindex="0"
+             aria-expanded="false" aria-controls="detail-msft" id="card-msft"
+             onclick="toggleCard(this)" onkeydown="handleKey(event,this)"
+             style="--company-color:#00a4ef; --company-bg:rgba(0,164,239,0.1)">
+          <div class="company-header">
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                <div class="company-icon" aria-hidden="true">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00a4ef" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/></svg>
+                </div>
+                <div>
+                  <div class="company-name">Microsoft</div>
+                  <div class="company-product">Copilot</div>
+                </div>
+              </div>
+              <div class="badge-row">
+                <span class="badge badge-ok">De-identificación declarada</span>
+                <span class="badge badge-ok">Excluye archivos subidos</span>
+              </div>
+            </div>
+            <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="company-detail" id="detail-msft" role="region" aria-label="Detalles Microsoft">
+            <div class="detail-inner">
+              <div class="detail-row">
+                <span class="detail-key">Entrenamiento por defecto</span>
+                <span class="detail-val hl-red">Sí</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Opt-out disponible</span>
+                <span class="detail-val hl-green">Sí</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Retención de datos</span>
+                <span class="detail-val hl-green">No indefinida</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Menores (13-18)</span>
+                <span class="detail-val hl-green">No entrena con datos de menores</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">De-identificación</span>
+                <span class="detail-val hl-green">Elimina nombres, biométricos, SSNs</span>
+              </div>
+              <p style="margin-top:12px; font-size:0.78rem; color:var(--text-2); font-style:italic">El más transparente en de-identificación. Excluye explícitamente archivos subidos del entrenamiento.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- OpenAI -->
+        <div class="company-card reveal reveal-delay-1" role="listitem" tabindex="0"
+             aria-expanded="false" aria-controls="detail-oai" id="card-oai"
+             onclick="toggleCard(this)" onkeydown="handleKey(event,this)"
+             style="--company-color:#10a37f; --company-bg:rgba(16,163,127,0.1)">
+          <div class="company-header">
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                <div class="company-icon" aria-hidden="true">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M8 12h8"/><path d="M12 8l4 4-4 4"/></svg>
+                </div>
+                <div>
+                  <div class="company-name">OpenAI</div>
+                  <div class="company-product">ChatGPT</div>
+                </div>
+              </div>
+              <div class="badge-row">
+                <span class="badge badge-warn">Retención indefinida</span>
+                <span class="badge badge-ok">Opt-out disponible</span>
+              </div>
+            </div>
+            <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="company-detail" id="detail-oai" role="region" aria-label="Detalles OpenAI">
+            <div class="detail-inner">
+              <div class="detail-row">
+                <span class="detail-key">Entrenamiento por defecto</span>
+                <span class="detail-val hl-red">Sí</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Opt-out disponible</span>
+                <span class="detail-val hl-green">Sí</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Retención de datos</span>
+                <span class="detail-val hl-red">Indefinida (algunos tipos)</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Política analizada</span>
+                <span class="detail-val">6+ documentos separados</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-key">Framing</span>
+                <span class="detail-val hl-amber">"Mejorar el modelo para todos"</span>
+              </div>
+              <p style="margin-top:12px; font-size:0.78rem; color:var(--text-2); font-style:italic">Usa culpa social como persuasión (guiltshaming). Chats compartidos aparecieron en Google Search.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PRÁCTICAS DE PRIVACIDAD ========== -->
+  <section id="practicas" aria-labelledby="practicas-title">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-num">02</span>
+        <div class="section-line"></div>
+      </div>
+      <h2 class="section-title reveal" id="practicas-title">Comparativa de <em class="hl-amber">Prácticas</em></h2>
+      <p class="section-desc reveal">Tabla comparativa basada en Table 1 del estudio. Verde = favorable para el usuario, Rojo = riesgo para privacidad.</p>
+
+      <!-- UX: Scrollable table with sticky first column for context -->
+      <div class="heatmap-wrapper reveal" role="region" aria-label="Tabla comparativa de prácticas de privacidad" tabindex="0">
+        <table class="heatmap">
+          <caption style="caption-side:bottom; padding:12px; font-size:0.7rem; color:var(--text-3); font-style:italic; text-align:left">
+            Fuente: King et al. (2025), Stanford University. Datos a mayo 2025, con actualización de Anthropic a septiembre 2025.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Práctica</th>
+              <th scope="col" data-tooltip="Nova Chatbot">Amazon</th>
+              <th scope="col" data-tooltip="Claude">Anthropic</th>
+              <th scope="col" data-tooltip="Gemini">Google</th>
+              <th scope="col" data-tooltip="Meta AI">Meta</th>
+              <th scope="col" data-tooltip="Copilot">Microsoft</th>
+              <th scope="col" data-tooltip="ChatGPT">OpenAI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Entrena con chats por defecto</td>
+              <td><span class="cell-ns">No espec.</span></td>
+              <td><span class="cell-yes">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí
+              </span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+            </tr>
+            <tr>
+              <td>Mecanismo de opt-out claro</td>
+              <td><span class="cell-ns">No espec.</span></td>
+              <td><span class="cell-no"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-ns">No espec.</span></td>
+              <td><span class="cell-no"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-no"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+            </tr>
+            <tr>
+              <td>Retención indefinida de chats</td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-no"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>No</span></td>
+              <td><span class="cell-no"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>No</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-no"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>No</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+            </tr>
+            <tr>
+              <td>Personalización de largo plazo</td>
+              <td><span class="cell-ns">No espec.</span></td>
+              <td><span class="cell-ns">No espec.</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+            </tr>
+            <tr>
+              <td>Permite cuentas menores 13-18</td>
+              <td><span class="cell-no"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>No</span></td>
+              <td><span class="cell-no"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>No</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+              <td><span class="cell-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sí</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ---- CHARTS: Privacy score + Consent analysis ---- -->
+      <div class="charts-grid" style="margin-top:40px">
+
+        <!-- Puntuación de riesgo de privacidad -->
+        <div class="chart-card reveal">
+          <h3 class="chart-title">Indicadores de Riesgo de Privacidad</h3>
+          <p class="chart-sub">Escala 0-5 basada en prácticas documentadas (mayor = más riesgo)</p>
+          <div class="score-bars" role="list" aria-label="Puntuaciones de riesgo por empresa">
+            <!-- Scores: criterios: entrenamiento defecto, sin opt-out, retención indefinida, menores, datos otras plataformas -->
+            <div class="score-row" role="listitem">
+              <span class="score-label">Amazon</span>
+              <div class="score-bar-track">
+                <div class="score-bar-fill" data-target="68" style="background:linear-gradient(90deg,#ff9900,#ffb833)"></div>
+              </div>
+              <span class="score-val">3.4</span>
+            </div>
+            <div class="score-row" role="listitem">
+              <span class="score-label">Google</span>
+              <div class="score-bar-track">
+                <div class="score-bar-fill" data-target="82" style="background:linear-gradient(90deg,#4285f4,#7baaf7)"></div>
+              </div>
+              <span class="score-val">4.1</span>
+            </div>
+            <div class="score-row" role="listitem">
+              <span class="score-label">Meta</span>
+              <div class="score-bar-track">
+                <div class="score-bar-fill" data-target="92" style="background:linear-gradient(90deg,#ff5c6a,#ff8585)"></div>
+              </div>
+              <span class="score-val">4.6</span>
+            </div>
+            <div class="score-row" role="listitem">
+              <span class="score-label">OpenAI</span>
+              <div class="score-bar-track">
+                <div class="score-bar-fill" data-target="74" style="background:linear-gradient(90deg,#10a37f,#2ec89e)"></div>
+              </div>
+              <span class="score-val">3.7</span>
+            </div>
+            <div class="score-row" role="listitem">
+              <span class="score-label">Microsoft</span>
+              <div class="score-bar-track">
+                <div class="score-bar-fill" data-target="52" style="background:linear-gradient(90deg,#00a4ef,#33c3ff)"></div>
+              </div>
+              <span class="score-val">2.6</span>
+            </div>
+            <div class="score-row" role="listitem">
+              <span class="score-label">Anthropic</span>
+              <div class="score-bar-track">
+                <div class="score-bar-fill" data-target="44" style="background:linear-gradient(90deg,#d97706,#fbbf24)"></div>
+              </div>
+              <span class="score-val">2.2</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Consentimiento: opt-in vs opt-out -->
+        <div class="chart-card reveal reveal-delay-1">
+          <h3 class="chart-title">El Poder de los Defaults</h3>
+          <p class="chart-sub">Distribución de modelos de consentimiento entre desarrolladores</p>
+
+          <!-- SVG Donut chart -->
+          <div style="display:flex; align-items:center; gap:28px; flex-wrap:wrap">
+            <svg width="160" height="160" viewBox="0 0 160 160" aria-label="Gráfico de distribución: 6 de 6 empresas usan opt-out por defecto" role="img">
+              <title>Distribución de modelo de consentimiento</title>
+              <!-- Opt-out: 6/6 = 100% but we show the evolution -->
+              <!-- Before sep 2025: 5 opt-out, 1 opt-in -->
+              <!-- After sep 2025: 6 opt-out -->
+              <!-- Show the "before" state: 5/6 opt-out, 1/6 opt-in -->
+              <circle cx="80" cy="80" r="60" fill="none" stroke="#1b2540" stroke-width="28"/>
+              <!-- Opt-out arc: 5/6 = 300 deg -->
+              <circle cx="80" cy="80" r="60" fill="none" stroke="#ff5c6a" stroke-width="28"
+                stroke-dasharray="0 377"
+                id="donut-optout"
+                stroke-linecap="round"
+                transform="rotate(-90 80 80)"/>
+              <!-- Opt-in arc: 1/6 = 60 deg -->
+              <circle cx="80" cy="80" r="60" fill="none" stroke="#22d98a" stroke-width="28"
+                stroke-dasharray="0 377"
+                id="donut-optin"
+                stroke-linecap="round"
+                transform="rotate(-90 80 80)"/>
+              <!-- Center text -->
+              <text x="80" y="75" text-anchor="middle" fill="#f0f6ff" font-family="'Syne', sans-serif" font-size="28" font-weight="800">6/6</text>
+              <text x="80" y="95" text-anchor="middle" fill="#6e8daf" font-family="'JetBrains Mono', monospace" font-size="10">opt-out</text>
+            </svg>
+
+            <div style="display:flex; flex-direction:column; gap:16px; flex:1">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+                  <div style="width:12px; height:12px; border-radius:50%; background:#ff5c6a; flex-shrink:0"></div>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:var(--text-1); text-transform:uppercase; letter-spacing:0.06em">Opt-out (defecto)</span>
+                </div>
+                <div style="font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:#ff5c6a; line-height:1">6 <span style="font-size:0.85rem; color:var(--text-2); font-weight:400">empresas</span></div>
+                <div style="font-size:0.75rem; color:var(--text-2); margin-top:2px">Desde septiembre 2025</div>
+              </div>
+              <hr class="divider" style="margin:8px 0">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+                  <div style="width:12px; height:12px; border-radius:50%; background:#22d98a; flex-shrink:0"></div>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:var(--text-1); text-transform:uppercase; letter-spacing:0.06em">Opt-in (antes)</span>
+                </div>
+                <div style="font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:#22d98a; line-height:1">1 <span style="font-size:0.85rem; color:var(--text-2); font-weight:400">empresa</span></div>
+                <div style="font-size:0.75rem; color:var(--text-2); margin-top:2px">Solo Anthropic — hasta ago 2025</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-box" style="margin-top:20px; margin-bottom:0">
+            Los usuarios empresariales están protegidos por defecto. Los consumidores deben actuar para proteger sus datos — una asimetría sistémica de privacidad.
+          </div>
+        </div>
+
+      </div><!-- /charts-grid -->
+    </div>
+  </section>
+
+  <!-- ========== DATOS DE ENTRENAMIENTO ========== -->
+  <section id="datos" aria-labelledby="datos-title">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-num">03</span>
+        <div class="section-line"></div>
+      </div>
+      <h2 class="section-title reveal" id="datos-title">Fuentes de Datos de <em class="hl-amber">Entrenamiento</em></h2>
+      <p class="section-desc reveal">Mapa de qué tipo de datos utiliza cada desarrollador para entrenar sus modelos (basado en Table 2 del estudio).</p>
+
+      <div class="chart-card reveal" style="overflow:auto">
+        <h3 class="chart-title">Matriz de Fuentes × Empresas</h3>
+        <p class="chart-sub">Rojo = confirmado, Verde = explícitamente excluido, Gris = no especificado</p>
+
+        <!-- Dot matrix grid -->
+        <div class="dot-matrix" role="table" aria-label="Matriz de fuentes de datos de entrenamiento">
+          <!-- Header row -->
+          <div class="dot-col-label" style="text-align:left" role="columnheader">Fuente de Datos</div>
+          <div class="dot-col-label" role="columnheader" data-tooltip="Amazon Nova">AMZ</div>
+          <div class="dot-col-label" role="columnheader" data-tooltip="Anthropic Claude">ANT</div>
+          <div class="dot-col-label" role="columnheader" data-tooltip="Google Gemini">GOO</div>
+          <div class="dot-col-label" role="columnheader" data-tooltip="Meta AI">MET</div>
+          <div class="dot-col-label" role="columnheader" data-tooltip="Microsoft Copilot">MSF</div>
+          <div class="dot-col-label" role="columnheader" data-tooltip="OpenAI ChatGPT">OAI</div>
+
+          <!-- Row: Chat inputs/outputs -->
+          <div class="dot-row-label" role="rowheader">Chats de usuarios<br>(inputs/outputs)</div>
+          <div class="dot dot-ns" role="cell" aria-label="Amazon: no especificado" data-tooltip="No especificado"></div>
+          <div class="dot dot-yes" role="cell" aria-label="Anthropic: sí" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" role="cell" aria-label="Google: sí" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" role="cell" aria-label="Meta: sí" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" role="cell" aria-label="Microsoft: sí" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" role="cell" aria-label="OpenAI: sí" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+
+          <!-- Row: Documents uploaded -->
+          <div class="dot-row-label" role="rowheader">Documentos<br>subidos</div>
+          <div class="dot dot-ns" role="cell" aria-label="Amazon: no especificado" data-tooltip="No especificado"></div>
+          <div class="dot dot-ns" role="cell" aria-label="Anthropic: no especificado" data-tooltip="No especificado"></div>
+          <div class="dot dot-yes" role="cell" aria-label="Google: sí" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" role="cell" aria-label="Meta: sí" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-no" role="cell" aria-label="Microsoft: no" data-tooltip="No — excluido explícitamente"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          <div class="dot dot-ns" role="cell" aria-label="OpenAI: no especificado" data-tooltip="No especificado"></div>
+
+          <!-- Row: Imágenes -->
+          <div class="dot-row-label" role="rowheader">Imágenes<br>subidas</div>
+          <div class="dot dot-ns" data-tooltip="No especificado"></div>
+          <div class="dot dot-ns" data-tooltip="No especificado"></div>
+          <div class="dot dot-no" data-tooltip="No — excluido"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          <div class="dot dot-yes" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-ns" data-tooltip="No especificado"></div>
+          <div class="dot dot-ns" data-tooltip="No especificado"></div>
+
+          <!-- Row: Datos plataforma -->
+          <div class="dot-row-label" role="rowheader">Datos otras<br>plataformas</div>
+          <div class="dot dot-ns" data-tooltip="No especificado"></div>
+          <div class="dot dot-ns" data-tooltip="No especificado"></div>
+          <div class="dot dot-yes" data-tooltip="Google Docs, Gmail, etc."><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" data-tooltip="Instagram, Facebook, posts"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" data-tooltip="Bing, MSN, Copilot, ads"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-no" data-tooltip="No — excluido"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+
+          <!-- Row: Web pública -->
+          <div class="dot-row-label" role="rowheader">Datos web<br>públicos</div>
+          <div class="dot dot-ns" data-tooltip="No especificado"></div>
+          <div class="dot dot-yes" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-yes" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+
+          <!-- Row: Datos licenciados -->
+          <div class="dot-row-label" role="rowheader">Datos con<br>licencia</div>
+          <div class="dot dot-ns" data-tooltip="No especificado"></div>
+          <div class="dot dot-yes" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-ns" data-tooltip="No confirmado en política (pero usa Reddit)"></div>
+          <div class="dot dot-yes" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="dot dot-ns" data-tooltip="No especificado"></div>
+          <div class="dot dot-yes" data-tooltip="Sí — confirmado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+
+        </div><!-- /dot-matrix -->
+
+        <!-- Legend -->
+        <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:24px; padding-top:16px; border-top:1px solid var(--border)">
+          <div style="display:flex; align-items:center; gap:8px">
+            <div class="dot dot-yes" style="width:22px;height:22px;flex-shrink:0"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--text-2)">Confirmado en política</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px">
+            <div class="dot dot-no" style="width:22px;height:22px;flex-shrink:0"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--text-2)">Excluido explícitamente</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px">
+            <div class="dot dot-ns" style="width:22px;height:22px;flex-shrink:0"></div>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--text-2)">No especificado / ambiguo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETENCIÓN DE DATOS ========== -->
+  <section id="retencion" aria-labelledby="retencion-title">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-num">04</span>
+        <div class="section-line"></div>
+      </div>
+      <h2 class="section-title reveal" id="retencion-title">Retención de <em class="hl-amber">Datos de Chat</em></h2>
+      <p class="section-desc reveal">Cada desarrollador retiene datos de chats en alguna forma indefinidamente. Las barras muestran el período de retención estándar documentado.</p>
+
+      <div class="retention-grid reveal">
+        <!-- Amazon -->
+        <div class="retention-row">
+          <div class="retention-co" style="color:#ff9900">Amazon</div>
+          <div class="retention-track" role="progressbar" aria-label="Amazon: retención indefinida">
+            <div class="retention-fill indefinite"></div>
+          </div>
+          <div class="retention-tag" style="background:rgba(255,92,106,0.15);color:#ff5c6a">
+            Indefinida
+          </div>
+        </div>
+
+        <!-- Meta -->
+        <div class="retention-row">
+          <div class="retention-co" style="color:#0866ff">Meta</div>
+          <div class="retention-track" role="progressbar" aria-label="Meta: retención indefinida sin límite">
+            <div class="retention-fill indefinite"></div>
+          </div>
+          <div class="retention-tag" style="background:rgba(255,92,106,0.15);color:#ff5c6a">
+            Sin límite declarado
+          </div>
+        </div>
+
+        <!-- OpenAI -->
+        <div class="retention-row">
+          <div class="retention-co" style="color:#10a37f">OpenAI</div>
+          <div class="retention-track" role="progressbar" aria-label="OpenAI: retención indefinida para algunos tipos">
+            <div class="retention-fill indefinite"></div>
+          </div>
+          <div class="retention-tag" style="background:rgba(255,92,106,0.15);color:#ff5c6a">
+            Indefinida (parcial)
+          </div>
+        </div>
+
+        <!-- Google -->
+        <div class="retention-row">
+          <div class="retention-co" style="color:#4285f4">Google</div>
+          <div class="retention-track" role="progressbar" aria-label="Google: 18 meses por defecto" aria-valuenow="18" aria-valuemin="0" aria-valuemax="60">
+            <div class="retention-fill" data-target="30" style="background:linear-gradient(90deg,#4285f4,#7baaf7)"></div>
+          </div>
+          <div class="retention-tag" style="background:rgba(245,166,35,0.12);color:#f5a623">
+            18 meses (defecto)
+          </div>
+        </div>
+
+        <!-- Microsoft -->
+        <div class="retention-row">
+          <div class="retention-co" style="color:#00a4ef">Microsoft</div>
+          <div class="retention-track" role="progressbar" aria-label="Microsoft: período limitado no indefinido" aria-valuenow="12" aria-valuemin="0" aria-valuemax="60">
+            <div class="retention-fill" data-target="20" style="background:linear-gradient(90deg,#00a4ef,#33c3ff)"></div>
+          </div>
+          <div class="retention-tag" style="background:rgba(34,217,138,0.1);color:#22d98a">
+            Período limitado
+          </div>
+        </div>
+
+        <!-- Anthropic -->
+        <div class="retention-row">
+          <div class="retention-co" style="color:#d97706">Anthropic</div>
+          <div class="retention-track" role="progressbar" aria-label="Anthropic: 30 días con opt-out o 5 años" aria-valuenow="30" aria-valuemin="0" aria-valuemax="60">
+            <div class="retention-fill" data-target="50" style="background:linear-gradient(90deg,#d97706,#fbbf24)"></div>
+          </div>
+          <div class="retention-tag" style="background:rgba(245,166,35,0.12);color:#f5a623">
+            30 días (opt-out) / 5 años
+          </div>
+        </div>
+
+      </div>
+
+      <div class="summary-box reveal" style="margin-top:32px">
+        Los datos de chat pueden revelar más información personal que las búsquedas de Google. La retención indefinida crea perfiles detallados de experiencias, pensamientos y preferencias — un riesgo potencial ante brechas de seguridad, litigios civiles o vigilancia gubernamental.
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== DATOS DE MENORES ========== -->
+  <section id="ninos" aria-labelledby="ninos-title">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-num">05</span>
+        <div class="section-line"></div>
+      </div>
+      <h2 class="section-title reveal" id="ninos-title">Datos de <em class="hl-red">Menores</em></h2>
+
+      <div class="alert-section reveal">
+        <div class="alert-icon-big" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff5c6a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:28px">
+          <div class="consent-item" style="grid-column: span 2">
+            <p style="font-size:0.9rem; color:var(--text-1); line-height:1.7">
+              El entrenamiento con datos de menores plantea graves cuestiones éticas y legales, ya que
+              <strong style="color:var(--red)">los menores no pueden dar consentimiento legal</strong> para que sus datos sean usados en modelos de IA. Google expandió Gemini a menores de 13 años en mayo de 2025. Existe evidencia creciente de que los menores usan chatbots para relaciones parasociales y contenido sexualizado que viola límites éticos y potencialmente legales.
+            </p>
+          </div>
+        </div>
+
+        <!-- Comparison grid -->
+        <div class="consent-grid">
+          <div class="consent-item">
+            <div class="consent-label" style="color:#ff5c6a">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:6px" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Permiten menores + entrenan
+            </div>
+            <div class="consent-desc">Amazon, Meta, OpenAI — no tratan datos de menores de forma diferente</div>
+            <div class="consent-count">3</div>
+            <div class="consent-of">/ 6 desarrolladores</div>
+          </div>
+
+          <div class="consent-item">
+            <div class="consent-label" style="color:#f5a623">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:6px" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Permiten pero con restricción
+            </div>
+            <div class="consent-desc">Google: opt-in solo para 13-18. Microsoft: no entrena con datos de menores</div>
+            <div class="consent-count">2</div>
+            <div class="consent-of">/ 6 desarrolladores</div>
+          </div>
+
+          <div class="consent-item">
+            <div class="consent-label" style="color:#22d98a">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:6px" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              No acepta menores
+            </div>
+            <div class="consent-desc">Anthropic — no permite ningún usuario menor de 18 años (sin verificación de edad)</div>
+            <div class="consent-count">1</div>
+            <div class="consent-of">/ 6 desarrolladores</div>
+          </div>
+
+          <div class="consent-item">
+            <div class="consent-label" style="color:#a78bfa">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:6px" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Huella digital infantil
+            </div>
+            <div class="consent-desc">La retención indefinida infringe potencialmente la California Children's Digital Erasure Law</div>
+            <div class="consent-count">∞</div>
+            <div class="consent-of">riesgo legal</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RECOMENDACIONES ========== -->
+  <section id="recomendaciones" aria-labelledby="rec-title">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-num">06</span>
+        <div class="section-line"></div>
+      </div>
+      <h2 class="section-title reveal" id="rec-title">5 <em class="hl-amber">Recomendaciones</em> del Estudio</h2>
+      <p class="section-desc reveal">Propuestas de los investigadores de Stanford para reguladores, desarrolladores y la sociedad civil.</p>
+
+      <div class="rec-grid">
+
+        <div class="rec-card reveal">
+          <div class="rec-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+          </div>
+          <div class="rec-title">Regulación Federal de Privacidad Integral</div>
+          <p class="rec-text">
+            Sin protecciones nacionales base, la gobernanza de datos personales usados para entrenar LLMs seguirá fragmentada. La CCPA provee derechos pero excluye información pública. Es necesaria legislación federal que aborde vacíos clave.
+          </p>
+          <div class="rec-num" aria-hidden="true">1</div>
+        </div>
+
+        <div class="rec-card reveal reveal-delay-1">
+          <div class="rec-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="rec-title">Requerir Opt-in para Entrenamiento</div>
+          <p class="rec-text">
+            Los reguladores deben exigir que los desarrolladores soliciten permiso explícito antes de usar chats para entrenamiento. Los menores nunca deberían estar incluidos por defecto. Se debe eliminar la asimetría empresarial vs. consumidores.
+          </p>
+          <div class="rec-num" aria-hidden="true">2</div>
+        </div>
+
+        <div class="rec-card reveal reveal-delay-2">
+          <div class="rec-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div class="rec-title">Incorporar IA en Políticas de Privacidad</div>
+          <p class="rec-text">
+            Los desarrolladores deben centralizar las prácticas de datos de IA en una única política clara. Deben mantener model cards, datasheets y reportes de transparencia accesibles. Las sub-políticas no son sustitutos de la transparencia directa.
+          </p>
+          <div class="rec-num" aria-hidden="true">3</div>
+        </div>
+
+        <div class="rec-card reveal reveal-delay-3">
+          <div class="rec-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="rec-title">Filtrar Información Personal por Defecto</div>
+          <p class="rec-text">
+            Como mínimo, los desarrolladores deben eliminar automáticamente datos sensibles (SSNs, salud, biométricos) antes de usar chats para entrenamiento. Las interfaces deben permitir a usuarios editar, eliminar o filtrar sus chats fácilmente.
+          </p>
+          <div class="rec-num" aria-hidden="true">4</div>
+        </div>
+
+        <div class="rec-card reveal reveal-delay-4">
+          <div class="rec-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="rec-title">Promover IA con Preservación de Privacidad</div>
+          <p class="rec-text">
+            Adoptar innovaciones como aprendizaje federado, privacidad diferencial y datos sintéticos. Referenciar modelos como Apple (no usa datos de usuarios), Proton (sin registros) y Tinfoil (enclaves seguros). La privacidad no debe ser una ocurrencia tardía.
+          </p>
+          <div class="rec-num" aria-hidden="true">5</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CONCLUSION ========== -->
+  <section id="conclusion" aria-labelledby="conclusion-title">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-num">07</span>
+        <div class="section-line"></div>
+      </div>
+      <h2 class="section-title reveal" id="conclusion-title">Conclusión <em class="hl-amber">del Estudio</em></h2>
+      <div style="max-width:740px">
+        <p class="reveal" style="font-size:1.05rem; color:var(--text-1); line-height:1.8; margin-bottom:24px">
+          En más de 30 años de internet comercial, los reguladores de EE.UU. no han logrado adoptar protecciones de privacidad que pongan límites reales al uso de datos personales. A medida que los chatbots cambian fundamentalmente cómo divulgamos información — no solo para buscar datos, sino para responder preguntas íntimas y personales — es urgente establecer límites que impidan a las empresas explotar estos datos.
+        </p>
+        <p class="reveal" style="font-size:1.05rem; color:var(--text-1); line-height:1.8">
+          La privacidad de nuestros chats está en riesgo generalizado. La cuestión fundamental es si las ganancias en capacidades de IA derivadas del entrenamiento con datos de chat justifican la pérdida de privacidad y el riesgo de dominación corporativa sobre los consumidores. Si estas promesas han de realizarse, deben basarse en una relación transparente y de confianza con el público.
+        </p>
+        <div class="summary-box reveal" style="margin-top:28px">
+          Si las personas creen que están siendo explotadas por sus datos para beneficio de las empresas tecnológicas, el público será reticente a aceptar los sacrificios — sin importar cuán grande sea el beneficio social potencial.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     FOOTER + SIGNATURE
+     ============================================================ -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-meta">
+        <p><strong style="color:var(--text-1)">Fuente:</strong> King, J.; Klyman, K.; Capstick, E.; Saade, T.; Hsieh, V. (2025).</p>
+        <p>"User Privacy and Large Language Models: An Analysis of Frontier Developers' Privacy Policies"</p>
+        <p>Stanford University — <a href="https://arxiv.org/abs/2509.05382" target="_blank" rel="noopener noreferrer">arXiv:2509.05382</a> · AAAI 2025</p>
+        <p style="margin-top:8px; color:var(--text-3); font-size:0.72rem">
+          Infografía educativa — datos a mayo/septiembre 2025.
+          Las puntuaciones de riesgo son derivadas del análisis para fines comparativos.
+        </p>
+      </div>
+
+      <div class="footer-sig" aria-label="Firma del diseño">
+        <div class="sig-logo">d3<span>magin</span>design</div>
+        <div class="sig-sub">UX Research · Data Visualization · 2025</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     JAVASCRIPT — Interactions, animations, accessibility
+     ============================================================ -->
+<script>
+/* ====================================================
+   UX: Intersection Observer for scroll-triggered reveals
+   Reduces cognitive load by presenting info progressively
+   ==================================================== */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      // Trigger bar animations when in view
+      entry.target.querySelectorAll('.score-bar-fill[data-target], .retention-fill[data-target]').forEach(bar => {
+        animateBar(bar);
+      });
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+/* Also observe chart cards for bar animations */
+document.querySelectorAll('.chart-card, .retention-grid').forEach(el => {
+  const barObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.score-bar-fill[data-target], .retention-fill[data-target]').forEach(bar => {
+          animateBar(bar);
+        });
+        barObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  barObserver.observe(el);
+});
+
+/* ====================================================
+   Bar animation
+   ==================================================== */
+function animateBar(bar) {
+  const target = parseInt(bar.dataset.target);
+  if (!target) return;
+  // Use requestAnimationFrame for smooth animation
+  requestAnimationFrame(() => {
+    bar.style.width = target + '%';
+  });
+}
+
+/* ====================================================
+   Donut chart animation
+   ==================================================== */
+const donutObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      animateDonut();
+      donutObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.4 });
+
+const donutEl = document.querySelector('#donut-optout');
+if (donutEl) donutObserver.observe(donutEl.closest('svg'));
+
+function animateDonut() {
+  const circumference = 2 * Math.PI * 60; // r=60
+  const optoutEl = document.getElementById('donut-optout');
+  const optinEl = document.getElementById('donut-optin');
+  if (!optoutEl || !optinEl) return;
+
+  // 6/6 opt-out (full circle after sep 2025)
+  const optoutFrac = 6 / 6;
+  const optinFrac = 0;
+
+  // Small gap between arcs
+  const gap = 4;
+
+  const optoutDash = (circumference * optoutFrac) - gap;
+
+  setTimeout(() => {
+    optoutEl.style.transition = 'stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)';
+    optoutEl.style.strokeDasharray = `${optoutDash} ${circumference - optoutDash}`;
+  }, 200);
+}
+
+/* ====================================================
+   UX: Company card toggle with ARIA
+   Keyboard accessible (Enter/Space to toggle)
+   ==================================================== */
+function toggleCard(card) {
+  const expanded = card.getAttribute('aria-expanded') === 'true';
+  const detailId = card.getAttribute('aria-controls');
+  const detail = document.getElementById(detailId);
+
+  // Close all other cards (accordion behavior)
+  document.querySelectorAll('.company-card[aria-expanded="true"]').forEach(other => {
+    if (other !== card) {
+      other.setAttribute('aria-expanded', 'false');
+      const otherId = other.getAttribute('aria-controls');
+      document.getElementById(otherId)?.classList.remove('open');
+    }
+  });
+
+  // Toggle current
+  card.setAttribute('aria-expanded', !expanded);
+  if (detail) {
+    detail.classList.toggle('open', !expanded);
+  }
+}
+
+/* UX: Keyboard handler — Enter/Space activate cards */
+function handleKey(event, card) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    toggleCard(card);
+  }
+}
+
+/* ====================================================
+   UX: Active nav link highlighting based on scroll
+   Provides orientation within long pages (WCAG 2.4.8)
+   ==================================================== */
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => {
+        link.removeAttribute('aria-current');
+        if (link.getAttribute('href') === '#' + entry.target.id) {
+          link.setAttribute('aria-current', 'true');
+        }
+      });
+    }
+  });
+}, { threshold: 0.35, rootMargin: '-80px 0px -60% 0px' });
+
+sections.forEach(s => navObserver.observe(s));
+
+/* ====================================================
+   UX: Smooth scroll with offset for sticky nav
+   ==================================================== */
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', (e) => {
+    const target = document.querySelector(anchor.getAttribute('href'));
+    if (!target) return;
+    e.preventDefault();
+    const offset = 70; // nav height
+    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  });
+});
+
+/* ====================================================
+   Micro-interaction: dot hover in matrix
+   Tooltip via CSS already handles it; JS adds ARIA
+   ==================================================== */
+document.querySelectorAll('.dot[data-tooltip]').forEach(dot => {
+  dot.setAttribute('role', 'img');
+  dot.setAttribute('aria-label', dot.dataset.tooltip);
+});
+
+/* ====================================================
+   Accessibility: announce dynamic changes to screen readers
+   ==================================================== */
+const liveRegion = document.createElement('div');
+liveRegion.setAttribute('aria-live', 'polite');
+liveRegion.setAttribute('aria-atomic', 'true');
+liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap';
+document.body.appendChild(liveRegion);
+
+document.querySelectorAll('.company-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const name = card.querySelector('.company-name')?.textContent;
+    const expanded = card.getAttribute('aria-expanded') === 'true';
+    liveRegion.textContent = `${name}: ${expanded ? 'detalles expandidos' : 'detalles contraídos'}`;
+  });
+});
+
+/* ====================================================
+   Respects reduced motion preference
+   ==================================================== */
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.querySelectorAll('.score-bar-fill, .retention-fill').forEach(bar => {
+    bar.style.transition = 'none';
+    if (bar.dataset.target) {
+      bar.style.width = bar.dataset.target + '%';
+    }
+  });
+}
+
+/* ====================================================
+   Init: trigger visible elements already in viewport
+   ==================================================== */
+window.addEventListener('load', () => {
+  document.querySelectorAll('.reveal').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight) {
+      el.classList.add('visible');
+    }
+  });
+});
+</script>
+
+</body>
+</html>
